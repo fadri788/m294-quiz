@@ -7,6 +7,7 @@ function QuestionCard() {
   const question = questions[0];
   const { category, text, answers, correct } = question;
   const [selected, setSelected] = useState(null);
+  const [showHint, setShowHint] = useState(false);
 
   const isAnswered = selected !== null;
   const isCorrect = selected === correct;
@@ -39,6 +40,12 @@ function QuestionCard() {
           </button>
         ))}
       </div>
+
+      <button onClick={() => setShowHint(!showHint)}>
+        {showHint ? "Tipp verbergen" : "Tipp zeigen"}
+      </button>
+
+      {showHint && <p>Richtig ist {correct}.</p>}
 
       {isAnswered && (
         <p className={isCorrect ? "alert alert-success" : "alert alert-error"}>
