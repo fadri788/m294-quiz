@@ -1,0 +1,478 @@
+/* =================================================================
+   Quiz UI, one stylesheet for the quiz app in the modules 294, 295 and 223.
+   TV quiz studio look: near black with blue and violet light, warm amber
+   highlights, angled panels like the answer boards on a show.
+
+   How to use it:
+     1. Copy this file to src/quiz-ui.css and import it once in src/main.jsx:
+          import "./quiz-ui.css";
+     2. Write plain HTML tags. header, nav, main, section, form, input,
+        button, table and ul are styled already.
+     3. Six classes carry the rest:
+          answers    around the answer buttons of a question
+          question   the question text
+          score      a small label with a number
+          stats      around the boxes with the numbers of a round
+          list       a ul that is a list of records, not running text
+          badge      category, difficulty, role
+        Everything else is optional. The full list is in README.md.
+
+   Everything is plain CSS. No framework, no build step, no npm package.
+   Colours, spacing and type live in the tokens below. Change a token and
+   the whole app follows.
+   ================================================================= */
+
+/* --- tokens ----------------------------------------------------- */
+:root {
+  /* surfaces, from the studio floor to the panels */
+  --bg: #04060f;
+  --surface: #0b1226;
+  --surface-2: #111a35;
+  --surface-3: #182347;
+  --border: #23305e;
+  --border-strong: #35479a;
+
+  /* text */
+  --text: #eaefff;
+  --text-muted: #a3b1da;
+  --text-dim: #6b7aa8;
+
+  /* the stage lights */
+  --accent: #3d7bff;        /* electric blue, primary actions */
+  --accent-bright: #6ea4ff;
+  --accent-deep: #1b3fc4;
+  --violet: #7c4dff;
+  --amber: #ffa63d;         /* the warm pinpoints, letters and ranks */
+  --gold: #ffc861;
+  --success: #24d18b;
+  --danger: #ff4d6d;
+
+  /* type */
+  --font-display: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
+  --font-body: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, "Cascadia Mono", Consolas, monospace;
+
+  /* shape and rhythm */
+  --radius: 10px;
+  --radius-sm: 8px;
+  --cut: 14px;              /* the angled corner of the panels */
+  --space: 16px;
+  --shadow: 0 16px 40px rgba(0, 0, 0, .55);
+  --glow-blue: 0 0 24px rgba(61, 123, 255, .45);
+  --glow-amber: 0 0 20px rgba(255, 166, 61, .35);
+  --speed: .15s;
+}
+
+/* --- base ------------------------------------------------------- */
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(1200px 700px at 50% -15%, rgba(61, 123, 255, .30) 0%, transparent 62%),
+    radial-gradient(900px 600px at 0% 12%, rgba(124, 77, 255, .22) 0%, transparent 60%),
+    radial-gradient(900px 600px at 100% 8%, rgba(27, 63, 196, .28) 0%, transparent 60%),
+    var(--bg);
+  background-attachment: fixed;
+  color: var(--text);
+  font: 16px/1.6 var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -.01em;
+  line-height: 1.15;
+  margin: 0 0 12px;
+}
+h1 { font-size: clamp(28px, 4vw, 42px); }
+h2 { font-size: clamp(22px, 3vw, 28px); }
+h3 { font-size: 19px; }
+p { margin: 0 0 12px; }
+
+a { color: var(--accent-bright); text-decoration: none; }
+a:hover { text-decoration: underline; }
+a.btn:hover { text-decoration: none; } /* a link that looks like a button */
+
+code, pre { font-family: var(--font-mono); font-size: .92em; }
+code { background: var(--surface-2); padding: 1px 6px; border-radius: 6px; color: var(--gold); }
+
+:focus-visible { outline: 2px solid var(--accent-bright); outline-offset: 2px; }
+
+/* the page frame: header, content, footer. #root is the div in index.html
+   that React renders into. A column at least as tall as the window keeps
+   the footer at the bottom, also when the page is short. */
+#root { display: flex; flex-direction: column; min-height: 100vh; min-height: 100dvh; }
+
+header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: linear-gradient(180deg, rgba(4, 6, 15, .95), rgba(4, 6, 15, .78));
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 1px 0 rgba(61, 123, 255, .35), 0 10px 30px rgba(0, 0, 0, .45);
+}
+header > * { max-width: 980px; margin: 0 auto; padding: 14px 20px; }
+
+main { display: block; width: 100%; max-width: 980px; margin: 0 auto; padding: 30px 20px 80px; }
+
+footer { margin-top: auto; border-top: 1px solid var(--border); color: var(--text-dim); font-size: 14px; }
+footer > * { max-width: 980px; margin: 0 auto; padding: 18px 20px; }
+
+/* --- navigation -------------------------------------------------- */
+nav { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+nav a {
+  font-family: var(--font-display);
+  font-size: 15px;
+  color: var(--text-muted);
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  transition: background var(--speed), color var(--speed), box-shadow var(--speed);
+}
+nav a:hover { background: var(--surface-2); color: var(--text); text-decoration: none; }
+nav a.active, nav a[aria-current="page"] {
+  background: linear-gradient(180deg, var(--surface-3), var(--surface-2));
+  color: var(--accent-bright);
+  box-shadow: inset 0 0 0 1px var(--border-strong), var(--glow-blue);
+}
+
+.brand {
+  font-family: var(--font-display);
+  font-size: 21px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--text);
+  text-shadow: 0 0 18px rgba(61, 123, 255, .55);
+}
+.brand span { color: var(--amber); text-shadow: 0 0 18px rgba(255, 166, 61, .5); }
+
+/* --- buttons ----------------------------------------------------- */
+button, .btn {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: normal; /* a link inherits 1.6 from body and would stand taller */
+  color: var(--text);
+  background: linear-gradient(180deg, var(--surface-3), var(--surface-2));
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  padding: 11px 20px;
+  cursor: pointer;
+  transition: transform var(--speed), filter var(--speed), box-shadow var(--speed), border-color var(--speed);
+}
+button:hover, .btn:hover { filter: brightness(1.18); border-color: var(--accent); }
+button:active, .btn:active { transform: translateY(1px); }
+button:disabled, .btn:disabled { opacity: .4; cursor: not-allowed; transform: none; filter: none; }
+
+.btn-primary {
+  background: linear-gradient(180deg, var(--accent-bright), var(--accent-deep));
+  border-color: var(--accent-bright);
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, .35);
+  box-shadow: var(--glow-blue);
+}
+.btn-primary:hover { box-shadow: 0 0 32px rgba(61, 123, 255, .65); }
+
+.btn-ghost { background: transparent; border-color: var(--border); color: var(--text-muted); }
+.btn-ghost:hover { color: var(--text); border-color: var(--border-strong); }
+
+.btn-danger { background: transparent; border-color: var(--danger); color: var(--danger); }
+.btn-danger:hover { background: rgba(255, 77, 109, .14); }
+
+.btn-lg { font-size: 18px; padding: 14px 28px; letter-spacing: .04em; text-transform: uppercase; }
+.btn-block { display: block; width: 100%; }
+
+/* --- cards and layout helpers ------------------------------------ */
+/* A section is a card. Students write <section> and get the panel look,
+   no class needed. .card does the same for a div. */
+section,
+.card {
+  position: relative;
+  background: linear-gradient(180deg, rgba(17, 26, 53, .96), rgba(11, 18, 38, .96));
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow), inset 0 1px 0 rgba(110, 164, 255, .12);
+  padding: 24px;
+  margin: 0 0 20px;
+}
+/* a thin light bar along the top edge, like the rim of the stage */
+section::before,
+.card::before {
+  content: "";
+  position: absolute;
+  inset: -1px -1px auto;
+  height: 2px;
+  border-radius: var(--radius) var(--radius) 0 0;
+  background: linear-gradient(90deg, transparent, var(--accent), var(--violet), transparent);
+  opacity: .8;
+}
+.card-head { display: flex; gap: 12px; align-items: baseline; justify-content: space-between; margin: 0 0 16px; }
+
+.stack > * + * { margin-top: 12px; }
+.row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.row-end { justify-content: flex-end; }
+.spacer { flex: 1 1 auto; }
+.muted { color: var(--text-muted); }
+.center { text-align: center; }
+
+/* --- quiz: question and answers ---------------------------------- */
+.question {
+  font-family: var(--font-display);
+  font-size: clamp(21px, 3vw, 27px);
+  line-height: 1.25;
+  margin: 6px 0 22px;
+}
+
+.answers { display: grid; gap: 12px; margin: 0 0 22px; }
+
+/* The angled panel of a TV quiz board. Every button inside .answers gets
+   it, so the buttons themselves need no class. */
+.answers > button,
+.answer {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  width: 100%;
+  text-align: left;
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 400;
+  color: var(--text);
+  background: linear-gradient(180deg, var(--surface-2), var(--surface));
+  border: 0;
+  border-radius: 0;
+  padding: 16px 20px;
+  clip-path: polygon(var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut));
+  box-shadow: inset 0 0 0 1px var(--border);
+  transition: background var(--speed), box-shadow var(--speed), transform var(--speed);
+}
+.answers > button:hover:not(:disabled),
+.answer:hover:not(:disabled) {
+  background: linear-gradient(180deg, var(--surface-3), var(--surface-2));
+  box-shadow: inset 0 0 0 1px var(--accent), var(--glow-blue);
+}
+.answers > button:focus-visible,
+.answer:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--accent-bright); }
+.answers > button::before,
+.answer::before {
+  content: attr(data-letter);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--amber);
+  min-width: 1.3em;
+  text-shadow: 0 0 14px rgba(255, 166, 61, .5);
+}
+.answers > button.correct,
+.answer.correct {
+  background: linear-gradient(180deg, rgba(36, 209, 139, .30), rgba(36, 209, 139, .12));
+  box-shadow: inset 0 0 0 1px var(--success), 0 0 26px rgba(36, 209, 139, .35);
+  animation: pop .25s ease-out;
+}
+.answers > button.correct::before,
+.answer.correct::before { content: "\2713"; color: var(--success); text-shadow: 0 0 14px rgba(36, 209, 139, .6); }
+.answers > button.wrong,
+.answer.wrong {
+  background: linear-gradient(180deg, rgba(255, 77, 109, .28), rgba(255, 77, 109, .10));
+  box-shadow: inset 0 0 0 1px var(--danger);
+}
+.answers > button.wrong::before,
+.answer.wrong::before { content: "\2715"; color: var(--danger); }
+.answers > button:disabled,
+.answer:disabled { cursor: default; }
+.answers > button:disabled:not(.correct):not(.wrong),
+.answer:disabled:not(.correct):not(.wrong) { opacity: .45; }
+
+@keyframes pop { from { transform: scale(.985); } to { transform: scale(1); } }
+
+/* --- progress and score ------------------------------------------ */
+.progress {
+  height: 8px;
+  background: var(--surface-2);
+  box-shadow: inset 0 0 0 1px var(--border);
+  border-radius: 20px;
+  overflow: hidden;
+}
+.progress > div {
+  height: 100%;
+  width: 0;
+  background: linear-gradient(90deg, var(--violet), var(--accent), var(--accent-bright));
+  box-shadow: var(--glow-blue);
+  transition: width .35s ease;
+}
+
+.score {
+  font-family: var(--font-display);
+  font-size: 15px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.score b { color: var(--gold); font-size: 21px; text-shadow: var(--glow-amber); }
+
+.stats { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); margin: 0 0 22px; }
+.stats > div,
+.stat {
+  background: linear-gradient(180deg, var(--surface-2), var(--surface));
+  box-shadow: inset 0 0 0 1px var(--border);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+}
+.stats > div > b,
+.stat b {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 32px;
+  line-height: 1.1;
+  color: var(--accent-bright);
+  text-shadow: var(--glow-blue);
+}
+.stats > div > span,
+.stat span { color: var(--text-muted); font-size: 14px; }
+
+/* --- badges ------------------------------------------------------ */
+.badge {
+  display: inline-block;
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  background: var(--surface-2);
+  box-shadow: inset 0 0 0 1px var(--border);
+  border-radius: 20px;
+  padding: 4px 12px;
+}
+.badge-accent { color: var(--accent-bright); box-shadow: inset 0 0 0 1px var(--accent); }
+.badge-success { color: var(--success); box-shadow: inset 0 0 0 1px var(--success); }
+.badge-warning { color: var(--amber); box-shadow: inset 0 0 0 1px var(--amber); }
+.badge-danger { color: var(--danger); box-shadow: inset 0 0 0 1px var(--danger); }
+
+/* --- forms ------------------------------------------------------- */
+label { display: block; font-size: 14px; color: var(--text-muted); margin: 0 0 6px; }
+
+input, select, textarea {
+  width: 100%;
+  font: 16px/1.5 var(--font-body);
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  transition: border-color var(--speed), box-shadow var(--speed);
+}
+input::placeholder, textarea::placeholder { color: var(--text-dim); }
+input:focus, select:focus, textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(61, 123, 255, .22);
+  outline: none;
+}
+input[type="checkbox"], input[type="radio"] { width: auto; accent-color: var(--accent); }
+textarea { min-height: 110px; resize: vertical; }
+
+.field { margin: 0 0 16px; }
+.field.invalid input, .field.invalid select, .field.invalid textarea,
+input[aria-invalid="true"], select[aria-invalid="true"], textarea[aria-invalid="true"] { border-color: var(--danger); }
+.error { display: block; color: var(--danger); font-size: 13.5px; margin: 6px 0 0; }
+.hint { display: block; color: var(--text-dim); font-size: 13.5px; margin: 6px 0 0; }
+
+fieldset { border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px 16px; margin: 0 0 16px; }
+legend { font-family: var(--font-display); font-size: 14px; color: var(--text-muted); padding: 0 6px; }
+
+/* --- lists and tables -------------------------------------------- */
+ul, ol { margin: 0 0 14px; padding-left: 20px; }
+li { margin: 0 0 6px; }
+
+.list { list-style: none; margin: 0 0 22px; padding: 0; }
+.list li {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  background: linear-gradient(180deg, var(--surface-2), var(--surface));
+  box-shadow: inset 0 0 0 1px var(--border);
+  border-radius: var(--radius-sm);
+  padding: 13px 16px;
+  margin: 0 0 9px;
+  transition: box-shadow var(--speed);
+}
+.list li:hover { box-shadow: inset 0 0 0 1px var(--border-strong); }
+.list .title { flex: 1 1 auto; }
+.list .title small { display: block; color: var(--text-dim); font-size: 13px; }
+
+table { width: 100%; border-collapse: collapse; margin: 0 0 22px; font-size: 15px; }
+th, td { text-align: left; padding: 12px 14px; border-bottom: 1px solid var(--border); }
+th {
+  font-family: var(--font-display);
+  font-size: 13px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+tbody tr:hover { background: var(--surface-2); }
+tr.me { background: linear-gradient(90deg, rgba(61, 123, 255, .22), transparent); }
+tr.me td { color: var(--text); }
+td.rank { font-family: var(--font-display); font-size: 19px; color: var(--gold); width: 3em; text-shadow: var(--glow-amber); }
+td.number { text-align: right; font-variant-numeric: tabular-nums; }
+
+/* --- messages, empty and loading --------------------------------- */
+.alert {
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--border), inset 4px 0 0 var(--accent);
+  border-radius: var(--radius-sm);
+  padding: 14px 18px;
+  margin: 0 0 16px;
+}
+.alert-success { box-shadow: inset 0 0 0 1px var(--border), inset 4px 0 0 var(--success); }
+.alert-error { box-shadow: inset 0 0 0 1px var(--border), inset 4px 0 0 var(--danger); }
+.alert-warning { box-shadow: inset 0 0 0 1px var(--border), inset 4px 0 0 var(--amber); }
+
+.empty {
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius);
+  color: var(--text-muted);
+  text-align: center;
+  padding: 36px 20px;
+}
+
+.loading { display: flex; gap: 12px; align-items: center; color: var(--text-muted); }
+.loading::before {
+  content: "";
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--border-strong);
+  border-top-color: var(--accent-bright);
+  border-radius: 50%;
+  animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* --- dialog (delete confirmation) -------------------------------- */
+dialog {
+  background: linear-gradient(180deg, var(--surface-2), var(--surface));
+  color: var(--text);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 24px;
+  max-width: 420px;
+}
+dialog::backdrop { background: rgba(2, 4, 10, .72); backdrop-filter: blur(2px); }
+
+/* --- small screens ----------------------------------------------- */
+@media (max-width: 600px) {
+  main { padding: 20px 16px 60px; }
+  .card { padding: 18px; }
+  .answers > button, .answer { padding: 14px 16px; --cut: 10px; }
+  .row { gap: 8px; }
+  .btn-lg { width: 100%; }
+}
+
+/* --- people who switch off animations ----------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
