@@ -1,36 +1,18 @@
-import { questions } from "./questions";
+import AppHeader from "./components/AppHeader";
+import QuestionCard from "./components/QuestionCard";
+import AppFooter from "./components/AppFooter";
 
 function App() {
-  const question = questions[0];
-  const { category, text, answers } = question;
-
   return (
     <>
-      <header>
-        <div className="row">
-          <span className="brand">Wissens<span>Quiz</span></span>
-          <span className="spacer"></span>
-          <span className="score">Frage <b>1</b> von {questions.length}</span>
-        </div>
-      </header>
+      <AppHeader />
 
+      {/* Die Karte holt ihre Frage noch selbst, ab 03A von hier */}
       <main>
-        <section>
-          <div className="card-head">
-            <span className="badge badge-accent">{category}</span>
-          </div>
-
-          <p className="question">{text}</p>
-
-          <div className="answers">
-            {answers.map((answer, index) => (
-              <button key={answer} data-letter={"ABCD"[index]}>
-                {answer}
-              </button>
-            ))}
-          </div>
-        </section>
+        <QuestionCard />
       </main>
+
+      <AppFooter />
     </>
   );
 }
