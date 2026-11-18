@@ -21,6 +21,14 @@ function App() {
           </div>
 
           <p className="question">{text}</p>
+
+          <div className="answers">
+            {answers.map((answer, index) => (
+              <button key={answer} data-letter={"ABCD"[index]}>
+                {answer}
+              </button>
+            ))}
+          </div>
         </section>
       </main>
     </>
